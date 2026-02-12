@@ -1,75 +1,3 @@
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:trips/models/user.dart';
-// import 'package:trips/providers/auth/auth_state.dart';
-//
-// class AuthController extends Notifier<AuthState> {
-//   @override
-//   AuthState build() {
-//     // Inisialisasi awal
-//     return AuthState.initial();
-//   }
-//
-//   Future<void> login(String email, String password) async {
-//     state = state.copyWith(isLoading: true, error: null);
-//
-//     try {
-//       // Simulasi API call
-//       await Future.delayed(const Duration(seconds: 2));
-//
-//       final user = User(
-//         id: DateTime.now().millisecondsSinceEpoch.toString(),
-//         name: 'Test User',
-//         email: email,
-//         phone: '',
-//         gender: '',
-//         countryCode: '',
-//         createdAt: DateTime.now(),
-//       );
-//
-//       state = state.copyWith(
-//         user: user,
-//         isLoading: false,
-//         error: null,
-//       );
-//     } catch (e) {
-//       state = state.copyWith(
-//         isLoading: false,
-//         error: e.toString(),
-//       );
-//     }
-//   }
-//
-//   Future<void> register(User newUser) async {
-//     state = state.copyWith(isLoading: true, error: null);
-//
-//     try {
-//       // Simulasi API call
-//       await Future.delayed(const Duration(seconds: 2));
-//
-//       state = state.copyWith(
-//         user: newUser,
-//         isLoading: false,
-//         error: null,
-//       );
-//     } catch (e) {
-//       state = state.copyWith(
-//         isLoading: false,
-//         error: e.toString(),
-//       );
-//     }
-//   }
-//
-//   void logout() {
-//     state = AuthState.initial();
-//   }
-// }
-//
-// final authProvider = NotifierProvider<AuthController, AuthState>(
-//       () => AuthController(),
-// );
-
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trips/models/user.dart';
 import 'package:trips/providers/auth/auth_state.dart';
@@ -137,11 +65,11 @@ class AuthController extends Notifier<AuthState> {
   }
 
   // ==================== REGISTER DENGAN HIVE ====================
-  Future<bool> register(User newUser) async { // ✅ TERIMA USER, BUKAN USERMODEL
+  Future<bool> register(User newUser) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final savedUser = await HiveService.registerUser(newUser); // ✅ RETURNS User
+      final savedUser = await HiveService.registerUser(newUser);
 
       if (savedUser != null) {
         state = state.copyWith(

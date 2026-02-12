@@ -67,7 +67,7 @@ class HiveService {
     if (userId == null) return null;
 
     final userBox = Hive.box<User>(userBoxName);
-    return userBox.get(userId); // ✅ INI SUDAH AMAN, return null jika tidak ditemukan
+    return userBox.get(userId);
   }
 
   // ==================== LOGOUT ====================
