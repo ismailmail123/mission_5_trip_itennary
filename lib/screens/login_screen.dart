@@ -3,7 +3,6 @@ import 'package:trips/screens/register_screen.dart';
 import 'package:trips/style/app_colors.dart';
 import 'package:trips/style/font_style.dart';
 import 'package:trips/helpers/login_validator.dart';
-
 import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -96,8 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // ================= LOGIN METHODS =================
 
-  /// Memproses login pengguna dengan validasi input
-  void _login() {
+  /// Validasi input sebelum login
+  /// Returns true jika valid, false jika ada error
+  bool _validateInputs() {
     // Reset error messages
     setState(() {
       _emailError = null;
@@ -105,22 +105,41 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     // Validasi email
-    _emailError = Validators.validateEmail(_emailController.text);
+    final emailError = Validators.validateEmail(_emailController.text);
 
     // Validasi password
-    _passwordError = Validators.validatePassword(_passwordController.text);
-    
-    Navigator.pushReplacementNamed(
-      context,
-      MainScreen.routeName,
-    );
-    if (_emailError != null || _passwordError != null) {
-      setState(() {});
-      _showErrorSnackBar("Please fix the errors in the form");
-      return;
+    final passwordError = Validators.validatePassword(_passwordController.text);
+
+    bool isValid = true;
+
+    if (emailError != null) {
+      setState(() => _emailError = emailError);
+      isValid = false;
     }
 
-    // TODO: Implementasi logika login ke backend
+    if (passwordError != null) {
+      setState(() => _passwordError = passwordError);
+      isValid = false;
+    }
+
+    if (!isValid) {
+      _showErrorSnackBar("Please fix the errors in the form");
+    }
+
+    return isValid;
+  }
+
+  /// Memproses login pengguna dengan validasi input
+  void _login() {
+    // Fokus: Hapus keyboard
+    FocusScope.of(context).unfocus();
+
+    // ✅ VALIDASI DULU sebelum navigasi
+    if (!_validateInputs()) {
+      return; // Stop jika validasi gagal
+    }
+
+    // ✅ Baru proses login jika validasi berhasil
     _processLogin();
   }
 
@@ -135,8 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
       // Simulasi login berhasil
       _showSuccessSnackBar("Login successful! Welcome back!");
 
-      // TODO: Navigasi ke home screen setelah login berhasil
-      // Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      // ✅ Navigasi ke MainScreen setelah login berhasil
+      Navigator.pushReplacementNamed(
+        context,
+        MainScreen.routeName,
+      );
     });
   }
 
@@ -173,17 +195,31 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Menampilkan snackbar biasa
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.of(context).primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   // ================= BUILD METHODS =================
 
   /// Membangun UI untuk layar login
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final bool isDark = widget.isDarkMode; // Gunakan dari widget, bukan late variable
+    final bool isDark = widget.isDarkMode;
 
     return Scaffold(
       backgroundColor: colors.background,
-
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -198,7 +234,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
@@ -239,7 +274,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-
                     Positioned(
                       top: -75,
                       child: Opacity(
@@ -256,45 +290,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-          Center(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Didn't have account?",
+              // ================= REGISTER LINK =================
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      "Didn't have account?",
+                      style: AppTextStyles.bodyMd(context).copyWith(
+                        color: colors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    GestureDetector(
+                      onTap: _isLoading ? null : _navigateToRegister,
+                      child: Text(
+                        "create one here!",
                         style: AppTextStyles.bodyMd(context).copyWith(
                           color: colors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w300,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => RegisterScreen(
-                                onThemeToggle: widget.onThemeToggle,
-                                isDarkMode: widget.isDarkMode,
-                                themeIcon: widget.themeIcon,
-                                themeDescription: widget.themeDescription,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "create one here!",
-                          style: AppTextStyles.bodyMd(context).copyWith(
-                            color: colors.textPrimary,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // ================= LOGIN FORM =================
               Container(
@@ -302,10 +325,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: BoxDecoration(
                   color: colors.background,
                   borderRadius: BorderRadius.circular(16),
-                  // border: Border.all(
-                  //   color: colors.border,
-                  //   width: 1.5,
-                  // ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,7 +426,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-
                     const SizedBox(height: 20),
 
                     // ================= DIVIDER =================
@@ -455,15 +473,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
+
+                    const SizedBox(height: 12),
+
+                    // ================= APPLE SIGN IN =================
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _isLoading ? null : () {
-                          _showSnackBar("Google sign in coming soon!");
+                          _showSnackBar("Apple sign in coming soon!");
                         },
                         style: ElevatedButton.styleFrom(
-
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -471,7 +491,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: colors.socialButton,
                           foregroundColor: colors.textPrimary,
                         ),
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.apple_sharp,
                           size: 22,
                         ),
@@ -487,7 +507,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 12),
+
+              const SizedBox(height: 12),
+
+              // ================= TERMS & PRIVACY =================
               Center(
                 child: Text.rich(
                   TextSpan(
@@ -497,6 +520,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
+                          color: colors.textSecondary,
                         ),
                       ),
                       TextSpan(
@@ -504,6 +528,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
+                          color: colors.primary,
                         ),
                       ),
                     ],
@@ -671,21 +696,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  /// Menampilkan snackbar biasa
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.of(context).primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
     );
   }
 }
