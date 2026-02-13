@@ -1,3 +1,5 @@
+// 💎 Model `CountryCode` yang sangat fungsional. Lengkap dengan 
+// factory `fromJson` dan method `toJson` untuk kemudahan parsing data! 🗺️✅
 class CountryCode {
   final String code;
   final String name;

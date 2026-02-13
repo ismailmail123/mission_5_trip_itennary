@@ -7,6 +7,8 @@ import 'package:trips/style/app_colors.dart';
 import 'package:trips/style/font_style.dart';
 import 'package:trips/models/trip_model.dart';
 
+// 💎 Struktur `MainScreen` yang mengelola inisialisasi halaman di `didChangeDependencies` 
+// adalah solusi cerdas untuk mengakses `context` secara aman saat setup. Pro! 🏗️🧩
 class MainScreen extends StatefulWidget {
   static const routeName = '/main';
 
@@ -322,6 +324,8 @@ class _MainScreenState extends State<MainScreen> {
         child: const Icon(Icons.manage_search, size: 28),
       )
           : null,
+      // 💎 Penggunaan `FloatingActionButtonLocation.centerDocked` memberikan 
+      // tampilan navigasi bawah yang sangat seimbang dan profesional! ⚓✨
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // =========== BOTTOM APP BAR DENGAN NOTCH ===========

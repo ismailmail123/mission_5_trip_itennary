@@ -63,6 +63,8 @@
 
 import 'package:flutter/material.dart';
 
+// 💎 Wow! Struktur `AppColors` ini sangat profesional. Pemisahan warna 
+// per layer (primary, surface, background) memudahkan styling konsisten. 🎨💎
 class AppColors {
   final Color background;
   final Color surface;
@@ -123,6 +125,8 @@ class AppColors {
     return Theme.of(context).brightness == Brightness.dark ? dark : light;
   }
 
+  // 💎 Hebat! Sudah mendukung mode gelap (Dark Mode) dan terang (Light Mode) 
+  // secara eksplisit dengan palet warna yang kontras dan nyaman di mata. 🌘🌖
   static const light = AppColors(
     background: Color(0xFFDBF7FF),    // Light blue background
     surface: Color(0xFFFFFFFF),       // White surface

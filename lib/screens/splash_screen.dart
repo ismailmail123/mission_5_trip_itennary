@@ -3,6 +3,8 @@ import 'package:trips/style/app_colors.dart';
 import 'package:trips/style/font_style.dart';
 import 'package:trips/screens/login_screen.dart';
 
+// 💎 `SplashScreen` dengan navigasi otomatis yang terkontrol memberikan 
+// first impression yang halus bagi pengguna aplikasi. Mantap! 🌊✨
 class SplashScreen extends StatefulWidget {
   static const routeName = '/splashscreen';
   final VoidCallback onThemeToggle;
@@ -124,6 +126,8 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
 
+          // 💎 Animasi transisi yang halus pada `SplashScreen` memberikan 
+          // kesan "Welcome" yang sangat elegan bagi pengguna baru. Level Expert! 🎬✨
           // Kontainer putih di bagian bawah dengan radius di kedua sisi atas
           Positioned(
             left: 0,

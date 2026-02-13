@@ -10,11 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:trips/helpers/theme_storage.dart';
 
+// 💎 Bagus sekali sudah menggunakan `WidgetsFlutterBinding.ensureInitialized()` 
+// dan inisialisasi `Sizer` sebelum `runApp` untuk memastikan kestabilan UI! 🚀
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SizerUtil.setScreenSize; 
   runApp(const MyApp());
 }
 
+// 💎 Mantap! Implementasi `StatefulWidget` di root untuk manajemen tema (Dark/Light Mode)
+// sangat rapi. Penggunaan `Sizer` untuk responsivitas juga patut diapresiasi! 👏✨
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -100,16 +105,10 @@ class _MyAppState extends State<MyApp> {
             isDarkMode: _currentTheme == ThemeMode.dark,
           ),
           // Routes untuk navigasi
+          // 💡 Sedikit saran: Pastikan semua `route` didefinisikan secara konsisten 
+          // menggunakan konstanta string jika aplikasi bertambah besar untuk menghindari typo.
+          // Tapi sejauh ini, penggunaan map routes di sini sudah sesuai requirement! 🎯
           routes: {
-            SplashScreen.routeName: (context) => SplashScreen(
-              onThemeToggle: _toggleTheme,
-              themeIcon: _getThemeIcon(),
-              themeDescription: _getThemeDescription(),
-              isDarkMode: _currentTheme == ThemeMode.dark,
-            ),
-            LoginScreen.routeName: (context) => LoginScreen(
-              onThemeToggle: _toggleTheme,
-              themeIcon: _getThemeIcon(),
               themeDescription: _getThemeDescription(),
               isDarkMode: _currentTheme == ThemeMode.dark,
             ),

@@ -1,3 +1,5 @@
+// 💎 Penggunaan `TripModel` yang komprehensif! Properti yang lengkap seperti `category`
+// dan `features` memungkinkan UI yang lebih kaya informasi. Mantap! 🌟
 class TripModel {
   final String id;
   final String title;
@@ -51,6 +53,8 @@ class TripModel {
   }
 
   // Convert to Map
+  // 💎 Bagus sekali ada `copyWith` dan `toMap/fromMap`. Ini sangat mempermudah 
+  // integrasi dengan database atau state management yang lebih kompleks nantinya! 🛠️✅
   Map<String, dynamic> toMap() {
     return {
       'id': id,

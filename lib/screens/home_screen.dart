@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:trips/style/app_colors.dart';
 import 'package:trips/style/font_style.dart';
 import 'main_screen.dart';
+// 💎 UI-nya sangat clean dan profesional! Penggunaan `CustomScrollView` dan `SliverGrid`
+// menunjukkan pemahaman yang baik tentang efisiensi rendering di Flutter. Top tier! 🏆
 class HomeScreen extends StatefulWidget {
   final VoidCallback onThemeToggle;
   final bool isDarkMode;
@@ -34,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<String> years = ['2024', '2025', '2026', '2027'];
 
   // Fungsi untuk menampilkan dialog pemilihan bulan
+  // 💎 Penggunaan `showModalBottomSheet` untuk picker (Month/Year) adalah 
+  // pilihan UX yang sangat baik dan modern. Keep it up! ✨
   Future<void> _showMonthPicker(BuildContext context) async {
     final colors = AppColors.of(context);
     final isDark = widget.isDarkMode;

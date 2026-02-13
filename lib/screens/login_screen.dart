@@ -135,6 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     // ✅ VALIDASI DULU sebelum navigasi
+    // 💎 Pengecekan validitas sebelum proses login berjalan menunjukkan 
+    // fokus yang sangat baik pada detail User Experience (UX). Mantap! 🛡️✨
     if (!_validateInputs()) {
       return; // Stop jika validasi gagal
     }
@@ -274,6 +276,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
+                    // 💎 Desain logo menggunakan Stack dan Gambar dengan Opacity 
+                    // memberikan sentuhan visual yang sangat modern dan premium! 🎨✨
                     Positioned(
                       top: -75,
                       child: Opacity(

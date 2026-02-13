@@ -1,3 +1,7 @@
+// 💎 Model `User` ini sangat pro dengan penggunaan factory `fromRegistration`. 
+// Memudahkan pembuatan entitas user dari berbagai sumber data! 👤💎
+// 💎 Model `User` ini sangat pro dengan penggunaan factory `fromRegistration`. 
+// Memudahkan pembuatan entitas user dari berbagai sumber data! 👤💎
 class User {
   final String id;
   final String name;

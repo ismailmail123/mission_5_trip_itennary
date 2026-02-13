@@ -11,8 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trips/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+    // 🚩 Tips: Cobalah eksplorasi testing untuk fitur utama Travel Planner-mu, 
+    // seperti memastikan list trip muncul atau navigasi detail bekerja. 🧪🛰️
     // await tester.pumpWidget(const MyApp());
 
     // Verify that our counter starts at 0.

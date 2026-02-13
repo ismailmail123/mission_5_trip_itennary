@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
+// 💡 Menarik! Menggunakan file system (`path_provider`) untuk menyimpan preferensi tema. 
+// Alternatif yang solid selain `shared_preferences` untuk data sederhana. 📂✨
+// 💎 Menarik! Menggunakan file system (`path_provider`) untuk menyimpan preferensi tema. 
+// Alternatif yang solid selain `shared_preferences` untuk data sederhana. 📂✨
 class ThemeStorage {
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
