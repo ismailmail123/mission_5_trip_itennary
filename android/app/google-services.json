@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "781197956903",
+    "project_id": "flutter-trips-a1c9e",
+    "storage_bucket": "flutter-trips-a1c9e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781197956903:android:c043cd35aba4cc1bba7b02",
+        "android_client_info": {
+          "package_name": "com.example_trips.trips"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "781197956903-12av621kfqiftqdim65jn1100h8vvc2l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWedjrjcGonAsDpnK50so0VUV5K6vGhvE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "781197956903-12av621kfqiftqdim65jn1100h8vvc2l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

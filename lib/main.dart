@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trips/screens/main_screen.dart';
@@ -14,6 +15,9 @@ import 'package:trips/providers/theme/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi Firebase
+  await Firebase.initializeApp();
 
   // ✅ INISIALISASI HIVE
   await Hive.initFlutter();

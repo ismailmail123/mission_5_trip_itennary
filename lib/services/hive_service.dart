@@ -18,7 +18,7 @@ class HiveService {
   static Future<User?> registerUser(User user) async {
     final box = Hive.box<User>(userBoxName);
 
-    // ✅ PERBAIKI: CEK EMAIL SUDAH TERDAFTAR DENGAN AMAN
+    // CEK EMAIL SUDAH TERDAFTAR DENGAN AMAN
     try {
       final existingUser = box.values.firstWhere(
             (u) => u.email == user.email,
