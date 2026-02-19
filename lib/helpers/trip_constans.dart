@@ -1,3 +1,6 @@
+// 💎 Penggunaan constants untuk data statis seperti kategori 
+// dan destinasi populer adalah cara yang bagus untuk menjaga 
+// kode tetap bersih dan mudah dikelola. Mantap! 🌍✨
 class TripConstants {
   static const List<String> tripCategories = [
     'Cultural',

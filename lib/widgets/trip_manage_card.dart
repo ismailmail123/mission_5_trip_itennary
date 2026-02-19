@@ -8,6 +8,8 @@ class TripManageCard extends StatelessWidget {
   final VoidCallback onToggleBook;
   final VoidCallback onView;
 
+// 💎 `TripManageCard` sangat rapi. Penggunaan `PopupMenuButton` untuk 
+// aksi CRUD adalah pilihan cerdas untuk menghemat ruang layar! 📱💎
   const TripManageCard({
     super.key,
     required this.trip,

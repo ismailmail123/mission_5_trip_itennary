@@ -307,6 +307,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 } else {
                   final lowercaseQuery = query.toLowerCase();
                   filteredList = _countryCodes.where((country) {
+                    // 💎 Pencarian kode negara yang case-insensitive dan mendalam 
+                    // ke nama, code, dan dialCode menunjukkan perhatian tinggi pada detail! 🛡️🔍
                     return country.name.toLowerCase().contains(lowercaseQuery) ||
                         country.code.toLowerCase().contains(lowercaseQuery) ||
                         country.dialCode.toLowerCase().contains(lowercaseQuery);

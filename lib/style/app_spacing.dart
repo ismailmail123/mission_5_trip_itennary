@@ -1,6 +1,8 @@
 import 'package:sizer/sizer.dart';
 
 class AppSpacing {
+  // 💎 Penggunaan `Sizer` untuk mengatur unit spasi adalah keputusan yang 
+  // sangat brilian untuk memastikan responsivitas layar di berbagai device! 📏🔋
   const AppSpacing._();
 
   static double get xs => 1.w;   // ~4

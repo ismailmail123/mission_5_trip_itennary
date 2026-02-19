@@ -1,3 +1,5 @@
+// 💎 Penggunaan static methods untuk validator di class `Validators` 
+// sangat memudahkan pemeliharaan kode (Centralized Logic). Mantap! 🛡️🎨
 class Validators {
   /// Validasi email
   static String? validateEmail(String value) {

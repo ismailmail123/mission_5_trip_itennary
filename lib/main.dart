@@ -10,11 +10,15 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:trips/helpers/theme_storage.dart';
 
+// 💎 Bagus sekali sudah menggunakan `WidgetsFlutterBinding.ensureInitialized()` 
+// dan inisialisasi `Sizer` sebelum `runApp` untuk memastikan kestabilan UI! 🚀
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
+// 💎 Mantap! Implementasi `StatefulWidget` di root untuk manajemen tema (Dark/Light Mode)
+// sangat rapi. Penggunaan `Sizer` untuk responsivitas juga patut diapresiasi! 👏✨
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 

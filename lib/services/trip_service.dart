@@ -1,5 +1,7 @@
 import '../models/trip_model.dart';
 
+// 💎 Service ini sangat rapi! Abstraksi logic dari UI ke Service adalah 
+// best practice yang sangat baik untuk maintainability. 🏗️✨
 class TripService {
   // Data dummy trips - GOLDEN PAVILION
   List<TripModel> _trips = [
@@ -42,6 +44,8 @@ class TripService {
   ];
 
   // GET ALL trips
+  // 💎 Penggunaan `List.from(_trips)` di `getAllTrips` sangat cerdik untuk 
+  // mencegah mutasi data asli secara tidak sengaja dari luar. Safe coding! 🛡️
   List<TripModel> getAllTrips() {
     return List.from(_trips);
   }

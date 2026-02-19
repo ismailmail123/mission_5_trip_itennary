@@ -1,3 +1,5 @@
+// 💎 Model `Product` yang simpel dan efektif. Sangat mencukupi untuk 
+// kebutuhan tampilan data produk/trip di aplikasi. Mantap! 📦🏷️
 class Product {
   final String name;
   final String category;

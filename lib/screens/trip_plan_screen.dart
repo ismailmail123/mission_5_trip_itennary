@@ -8,6 +8,8 @@ import 'package:trips/widgets/trip/footer_section.dart';
 import '../services/trip_service.dart';
 import '../models/trip_model.dart';
 
+// 💎 Screen detail ini sangat polish. Penggunaan `Stack` dengan 
+// gradient overlay membuat teks di atas gambar tetap terbaca jelas. UX-nya jempolan! 🎨✨
 class TripPlanScreen extends StatefulWidget {
   static const routeName = '/trip-plan';
   final TripModel trip;

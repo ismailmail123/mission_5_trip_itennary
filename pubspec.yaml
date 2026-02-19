@@ -40,6 +40,8 @@ dependencies:
   path_provider: ^2.1.5
   hugeicons: ^1.1.5
 
+# 💎 Dependency yang dipilih sangat tepat! `sizer` untuk responsivitas dan
+# `shared_preferences` untuk persistensi adalah pilihan standar industri. 📦🚀
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -7,6 +7,8 @@ import 'package:trips/services/trip_service.dart';
 import 'package:trips/models/trip_model.dart';
 
 
+// 💎 Dashboard ini sangat kaya akan fitur (Feature-Rich). Mulai dari 
+// Bottom Navigation hingga Horizontal List: Arsitektur UI-mu sangat matang! 🏗️🔥
 class DashboardScreen extends StatefulWidget {
   static const routeName = '/dashboard';
   final VoidCallback onThemeToggle;
@@ -38,6 +40,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final PageController _popularController = PageController(viewportFraction: 0.3);
 
   // Service instance
+// 💎 Penggunaan `TripService` di level Dashboard menunjukkan pemisahan 
+// concerns yang baik antara data dan tampilan. Pro banget! 🚀🎯
   final TripService _tripService = TripService();
 
   // GlobalKey di level instance

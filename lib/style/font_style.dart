@@ -188,6 +188,8 @@ import 'package:sizer/sizer.dart';
 
 enum FontEngine { local, google }
 
+// 💎 Sistem tipografi terpusat ini sangat mempermudah scaling aplikasi. 
+// Kamu menggunakan `sizer` untuk font-size, ini adalah best practice industri! 📱📏
 class AppFonts {
   static TextStyle base({
     required FontEngine engine,

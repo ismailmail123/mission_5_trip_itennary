@@ -1,6 +1,7 @@
 # trips
 
-A new Flutter project.
+// 🚩 Saran: README ini masih default. Tambahkan deskripsi aplikasi, screenshot, 
+// dan fitur unggulanmu agar portofolio-mu makin keren! 📝✨
 
 ## Getting Started
 

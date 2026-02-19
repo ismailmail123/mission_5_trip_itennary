@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trips/main.dart';
 
 void main() {
+    // 🚩 Tips: Cobalah eksplorasi testing untuk fitur utama Travel Planner-mu,
+    // seperti memastikan list trip muncul atau navigasi detail bekerja. 🧪🛰️
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     // await tester.pumpWidget(const MyApp());

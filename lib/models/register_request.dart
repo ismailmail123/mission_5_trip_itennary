@@ -1,3 +1,5 @@
+// 💎 Memisahkan logic pendaftaran ke dalam `RegisterRequest` adalah 
+// langkah cerdas dalam memisahkan state pendaftaran dan model User asli! 🛡️🏗️
 class RegisterRequest {
   final String name;
   final String email;
@@ -17,6 +19,8 @@ class RegisterRequest {
 
   /// Validasi request
   Map<String, String?> validate() {
+    // 💎 Logic validasi internal pada request model ini adalah praktik 
+    // yang sangat baik untuk memastikan integritas data (Self-Validating Model)! 🛡️✨
     final errors = <String, String?>{};
 
     if (name.isEmpty) {
