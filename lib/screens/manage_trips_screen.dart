@@ -37,17 +37,13 @@ class _ManageTripsScreenState extends State<ManageTripsScreen> {
     _trips = _tripService.getAllTrips();
   }
 
-  // 💎 Logic filter pencarian ini sangat efisien! Penggunaan `where` dan `toLowerCase` 
-  // memastikan pencarian tidak case-sensitive dan responsif. Bagus! 🔍
-  void _filterTrips(String query) {
+  void _refreshTrips() {
     setState(() {
       _trips = _tripService.getAllTrips();
     });
   }
 
-  // 💎 Implementasi `Dismissible` atau dialog konfirmasi hapus adalah best practice 
-  // untuk mencegah data hilang secara tidak sengaja. Kerja bagus! 🗑️✅
-  void _showDeleteConfirmation(String tripId, String tripTitle) {
+  void _showDeleteDialog(String tripId, String tripTitle) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -61,7 +57,7 @@ class _ManageTripsScreenState extends State<ManageTripsScreen> {
           TextButton(
             onPressed: () {
               _tripService.deleteTrip(tripId);
-              _filterTrips(''); // Refresh trips after deletion
+              _refreshTrips();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Trip deleted successfully')),
@@ -74,6 +70,12 @@ class _ManageTripsScreenState extends State<ManageTripsScreen> {
     );
   }
 
+  void _showEditDialog(TripModel trip) {
+    final titleController = TextEditingController(text: trip.title);
+    final locationController = TextEditingController(text: trip.location);
+    final priceController = TextEditingController(text: trip.price.toString());
+    final ratingController = TextEditingController(text: trip.rating.toString());
+    final descriptionController = TextEditingController(text: trip.description);
 
     showDialog(
       context: context,
@@ -234,8 +236,6 @@ class _ManageTripsScreenState extends State<ManageTripsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 💎 Logic filter pencarian ini sangat efisien! Penggunaan `where` dan `toLowerCase` 
-    // memastikan pencarian tidak case-sensitive dan responsif. Bagus! 🔍✨
     final filteredTrips = _searchController.text.isEmpty
         ? _trips
         : _trips.where((trip) =>

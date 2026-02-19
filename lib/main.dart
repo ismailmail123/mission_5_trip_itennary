@@ -14,7 +14,6 @@ import 'package:trips/helpers/theme_storage.dart';
 // dan inisialisasi `Sizer` sebelum `runApp` untuk memastikan kestabilan UI! 🚀
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SizerUtil.setScreenSize; 
   runApp(const MyApp());
 }
 
@@ -105,10 +104,16 @@ class _MyAppState extends State<MyApp> {
             isDarkMode: _currentTheme == ThemeMode.dark,
           ),
           // Routes untuk navigasi
-          // 💡 Sedikit saran: Pastikan semua `route` didefinisikan secara konsisten 
-          // menggunakan konstanta string jika aplikasi bertambah besar untuk menghindari typo.
-          // Tapi sejauh ini, penggunaan map routes di sini sudah sesuai requirement! 🎯
           routes: {
+            SplashScreen.routeName: (context) => SplashScreen(
+              onThemeToggle: _toggleTheme,
+              themeIcon: _getThemeIcon(),
+              themeDescription: _getThemeDescription(),
+              isDarkMode: _currentTheme == ThemeMode.dark,
+            ),
+            LoginScreen.routeName: (context) => LoginScreen(
+              onThemeToggle: _toggleTheme,
+              themeIcon: _getThemeIcon(),
               themeDescription: _getThemeDescription(),
               isDarkMode: _currentTheme == ThemeMode.dark,
             ),
