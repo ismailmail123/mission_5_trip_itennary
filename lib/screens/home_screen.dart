@@ -74,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   return GestureDetector(
                     onTap: () {
+                      //{Inline Review: State pemilihan bulan/tahun bisa dipindah ke provider ringan agar screen lebih modular.}
                       setState(() {
                         _selectedMonth = month;
                       });

@@ -6,6 +6,7 @@ import 'package:trips/services/trip_service.dart';
 class TripController extends Notifier<TripState> {
   @override
   TripState build() {
+    //{Inline Review: Memanggil async loader dari build perlu guard lifecycle agar tidak men-trigger reload berulang saat provider recreate.}
     _loadTrips();
     return TripState.initial();
   }
