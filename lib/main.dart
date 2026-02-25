@@ -21,6 +21,7 @@ void main() async {
   await HiveTripService.init();
 
   // ✅ RESET DAN INITIAL DATA TRIP (hapus dulu, create ulang)
+  //{Inline Review: Reset pada startup membuat data user tidak persisten antar sesi aplikasi.}
   await HiveTripService.resetAndInitialize();
   runApp(const ProviderScope(child: MyApp()));
 }

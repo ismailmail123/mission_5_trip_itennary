@@ -16,6 +16,7 @@ class TripState {
     bool? isLoading,
     String? error,
   }) {
+    //{Inline Review: `error ?? this.error` membuat error sulit di-clear ke null secara eksplisit.}
     return TripState(
       trips: trips ?? this.trips,
       isLoading: isLoading ?? this.isLoading,
