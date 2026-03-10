@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:trips/screens/searc_trip_screen.dart';
 import 'package:trips/style/app_colors.dart';
-import 'package:trips/style/font_style.dart';
-import 'main_screen.dart';
-class HomeScreen extends StatefulWidget {
-  final VoidCallback onThemeToggle;
-  final bool isDarkMode;
-  final IconData themeIcon;
-  final String themeDescription;
 
-  const HomeScreen({
-    super.key,
-    required this.onThemeToggle,
-    required this.isDarkMode,
-    required this.themeIcon,
-    required this.themeDescription,
-  });
+class HomeScreen extends StatefulWidget {
+  // Hapus parameter tema
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,85 +14,60 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _selectedMonth = 'Sep';
   String _selectedYear = '2025';
+  String? _selectedCategory;
 
-  // Daftar bulan dan tahun
   final List<String> months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
 
-  final List<String> years = ['2024', '2025', '2026', '2027'];
+  final List<String> years = ['2026', '2027'];
 
-  // Fungsi untuk menampilkan dialog pemilihan bulan
+  final Map<String, String> _categoryMapping = {
+    'Sightseeing': 'Sightseeing',
+    'Restaurant': 'Food',
+    'Nightlife': 'Nightlife',
+    'Hotel': 'Hotel',
+    'Shopping': 'Shopping',
+    'Cinema': 'Cinema',
+  };
+
   Future<void> _showMonthPicker(BuildContext context) async {
     final colors = AppColors.of(context);
-    final isDark = widget.isDarkMode;
 
     await showModalBottomSheet(
       context: context,
       backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Select Month',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                ),
-              ),
+              Text('Select Month', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary)),
               const SizedBox(height: 20),
               GridView.builder(
                 shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1.5,
-                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.5),
                 itemCount: months.length,
                 itemBuilder: (context, index) {
                   final month = months[index];
                   final isSelected = month == _selectedMonth;
-
                   return GestureDetector(
                     onTap: () {
-                      setState(() {
-                        _selectedMonth = month;
-                      });
+                      setState(() => _selectedMonth = month);
                       Navigator.pop(context);
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? colors.primary
-                            : colors.card,
+                        color: isSelected ? colors.primary : colors.card,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected
-                              ? colors.primary
-                              : colors.border,
-                        ),
+                        border: Border.all(color: isSelected ? colors.primary : colors.border),
                       ),
                       child: Center(
-                        child: Text(
-                          month,
-                          style: TextStyle(
-                            color: isSelected
-                                ? colors.onPrimary
-                                : colors.textPrimary,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
+                        child: Text(month,
+                            style: TextStyle(color: isSelected ? colors.onPrimary : colors.textPrimary, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                       ),
                     ),
                   );
@@ -116,77 +81,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Fungsi untuk menampilkan dialog pemilihan tahun
   Future<void> _showYearPicker(BuildContext context) async {
     final colors = AppColors.of(context);
-    final isDark = widget.isDarkMode;
 
     await showModalBottomSheet(
       context: context,
       backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Select Year',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                ),
-              ),
+              Text('Select Year', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary)),
               const SizedBox(height: 20),
               GridView.builder(
                 shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2,
-                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2),
                 itemCount: years.length,
                 itemBuilder: (context, index) {
                   final year = years[index];
                   final isSelected = year == _selectedYear;
-
                   return GestureDetector(
                     onTap: () {
-                      setState(() {
-                        _selectedYear = year;
-                      });
+                      setState(() => _selectedYear = year);
                       Navigator.pop(context);
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? colors.primary
-                            : colors.card,
+                        color: isSelected ? colors.primary : colors.card,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected
-                              ? colors.primary
-                              : colors.border,
-                        ),
+                        border: Border.all(color: isSelected ? colors.primary : colors.border),
                       ),
                       child: Center(
-                        child: Text(
-                          year,
-                          style: TextStyle(
-                            color: isSelected
-                                ? colors.onPrimary
-                                : colors.textPrimary,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            fontSize: 16,
-                          ),
-                        ),
+                        child: Text(year,
+                            style: TextStyle(color: isSelected ? colors.onPrimary : colors.textPrimary, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 16)),
                       ),
                     ),
                   );
@@ -197,13 +127,47 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _selectCategory(String category) {
+    setState(() {
+      if (_selectedCategory == category) {
+        _selectedCategory = null;
+      } else {
+        _selectedCategory = category;
+      }
+    });
+  }
+
+  void _navigateToSearch() {
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a category first'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchTripsScreen(
+          initialMonth: _selectedMonth,
+          initialYear: _selectedYear,
+          initialCategory: _selectedCategory!,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final isDark = widget.isDarkMode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -213,191 +177,87 @@ class _HomeScreenState extends State<HomeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// APPBAR dengan tombol back dan theme toggle
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Back button - Kembali ke MainScreen dengan tab Dashboard (index 1)
                       GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => MainScreen(
-                                onThemeToggle: widget.onThemeToggle,
-                                themeIcon: widget.themeIcon,
-                                themeDescription: widget.themeDescription,
-                                isDarkMode: widget.isDarkMode,
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.pop(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_back,
-                                  color: Colors.white, size: 16),
+                              Icon(Icons.arrow_back, color: Colors.white, size: 16),
                               SizedBox(width: 4),
-                              Text('back',
-                                  style:
-                                  TextStyle(color: Colors.white, fontSize: 12)),
+                              Text('back', style: TextStyle(color: Colors.white, fontSize: 12)),
                             ],
                           ),
                         ),
                       ),
-
-                      // Theme toggle button
-                      GestureDetector(
-                        onTap: widget.onThemeToggle,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: colors.border),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            widget.themeIcon,
-                            color: isDark ? colors.primary : Colors.blue,
-                            size: 20,
-                          ),
-                        ),
-                      ),
+                      const SizedBox(width: 40),
                     ],
                   ),
                 ),
 
-                /// PICK UP DATE dengan dropdown interaktif
+                /// PICK UP DATE
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Pick up a date!',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: colors.textPrimary,
-                        ),
-                      ),
+                      Text('Pick up a date!', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: colors.textPrimary)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          // Dropdown untuk bulan
                           GestureDetector(
                             onTap: () => _showMonthPicker(context),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
                                 color: isDark ? colors.surface : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: isDark ? colors.border : Colors.grey.shade300),
+                                border: Border.all(color: isDark ? colors.border : Colors.grey.shade300),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    _selectedMonth,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark ? colors.textPrimary : Colors.black,
-                                    ),
-                                  ),
+                                  Text(_selectedMonth, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isDark ? colors.textPrimary : Colors.black)),
                                   const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    color: isDark ? colors.textPrimary : Colors.black,
-                                    size: 20,
-                                  ),
+                                  Icon(Icons.arrow_drop_down, color: isDark ? colors.textPrimary : Colors.black, size: 20),
                                 ],
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
-
-                          // Dropdown untuk tahun
                           GestureDetector(
                             onTap: () => _showYearPicker(context),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
                                 color: isDark ? colors.surface : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: isDark ? colors.border : Colors.grey.shade300),
+                                border: Border.all(color: isDark ? colors.border : Colors.grey.shade300),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    _selectedYear,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark ? colors.textPrimary : Colors.black,
-                                    ),
-                                  ),
+                                  Text(_selectedYear, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isDark ? colors.textPrimary : Colors.black)),
                                   const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    color: isDark ? colors.textPrimary : Colors.black,
-                                    size: 20,
-                                  ),
+                                  Icon(Icons.arrow_drop_down, color: isDark ? colors.textPrimary : Colors.black, size: 20),
                                 ],
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
-
-                          // Tombol Booked Now
                           GestureDetector(
-                            onTap: () {
-                              // Logika untuk memproses booking
-                              print('Booking untuk $_selectedMonth $_selectedYear');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Booking untuk $_selectedMonth $_selectedYear'),
-                                  backgroundColor: colors.primary,
-                                ),
-                              );
-                            },
+                            onTap: _navigateToSearch,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'Booked Now!',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
+                              child: Text('Book Now!', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -408,13 +268,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                /// GRID + TITLE (SCROLL BERSAMA)
+                /// GRID + TITLE
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: CustomScrollView(
                       slivers: [
-                        /// TITLE (ikut scroll)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 20),
@@ -422,16 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 'Add to\nItinerary',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: colors.textPrimary,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colors.textPrimary),
                               ),
                             ),
                           ),
                         ),
-
                         SliverGrid(
                           delegate: SliverChildListDelegate(
                             [
@@ -440,36 +294,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                 label: 'Sightseeing',
                                 isDark: isDark,
                                 iconColorLight: colors.textPrimary,
+                                isSelected: _selectedCategory == 'Sightseeing',
+                                onTap: () => _selectCategory('Sightseeing'),
                               ),
                               _GridItem(
                                 icon: Icons.local_cafe_outlined,
                                 label: 'Restaurant',
                                 isDark: isDark,
                                 iconColorLight: colors.textPrimary,
+                                isSelected: _selectedCategory == 'Restaurant',
+                                onTap: () => _selectCategory('Restaurant'),
                               ),
                               _GridItem(
                                 icon: Icons.celebration_outlined,
                                 label: 'Nightlife',
                                 isDark: isDark,
                                 iconColorLight: colors.nightLife,
+                                isSelected: _selectedCategory == 'Nightlife',
+                                onTap: () => _selectCategory('Nightlife'),
                               ),
                               _GridItem(
                                 icon: Icons.apartment_outlined,
                                 label: 'Hotel',
                                 isDark: isDark,
                                 iconColorLight: colors.hotelIcon,
+                                isSelected: _selectedCategory == 'Hotel',
+                                onTap: () => _selectCategory('Hotel'),
                               ),
                               _GridItem(
                                 icon: Icons.shopping_bag_outlined,
                                 label: 'Shopping',
                                 isDark: isDark,
                                 iconColorLight: colors.iconShopping,
+                                isSelected: _selectedCategory == 'Shopping',
+                                onTap: () => _selectCategory('Shopping'),
                               ),
                               _GridItem(
                                 icon: Icons.tv_outlined,
                                 label: 'Cinema',
                                 isDark: isDark,
                                 iconColorLight: colors.iconChinema,
+                                isSelected: _selectedCategory == 'Cinema',
+                                onTap: () => _selectCategory('Cinema'),
                               ),
                             ],
                           ),
@@ -499,6 +365,8 @@ class _GridItem extends StatelessWidget {
   final bool highlight;
   final bool isDark;
   final Color iconColorLight;
+  final VoidCallback onTap;
+  final bool isSelected;
 
   const _GridItem({
     required this.icon,
@@ -506,43 +374,42 @@ class _GridItem extends StatelessWidget {
     this.highlight = false,
     required this.isDark,
     required this.iconColorLight,
+    required this.onTap,
+    required this.isSelected,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: BorderRadius.circular(8),
-        border: highlight ? Border.all(color: Colors.purple, width: 2) : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 60,
-            color: iconColorLight,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: colors.textPrimary,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.card,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected ? Border.all(color: colors.primary, width: 3) : (highlight ? Border.all(color: Colors.purple, width: 2) : null),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? colors.primary.withOpacity(0.3) : Colors.black.withOpacity(0.1),
+              blurRadius: isSelected ? 12 : 8,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 60, color: isSelected ? colors.primary : iconColorLight),
+            const SizedBox(height: 12),
+            Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? colors.primary : colors.textPrimary)),
+            if (isSelected)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Icon(Icons.check_circle, color: colors.primary, size: 16),
+              ),
+          ],
+        ),
       ),
     );
   }

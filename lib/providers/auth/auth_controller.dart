@@ -1,132 +1,18 @@
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:trips/models/user.dart';
-// import 'package:trips/providers/auth/auth_state.dart';
-// import 'package:trips/services/hive_service.dart';
-//
-// class AuthController extends Notifier<AuthState> {
-//   @override
-//   AuthState build() {
-//     _checkSession();
-//     return AuthState.initial();
-//   }
-//
-//   // ==================== CEK SESSION ====================
-//   Future<void> _checkSession() async {
-//     try {
-//       final currentUser = await HiveService.getCurrentUser();
-//       if (currentUser != null) {
-//         state = state.copyWith(
-//           user: currentUser, // ✅ LANGSUNG PAKAI USER, TIDAK PERLU fromUserModel
-//           isAuthenticated: true,
-//           isLoading: false,
-//         );
-//       } else {
-//         state = state.copyWith(isLoading: false);
-//       }
-//     } catch (e) {
-//       state = state.copyWith(
-//         error: e.toString(),
-//         isLoading: false,
-//       );
-//     }
-//   }
-//
-//   // ==================== LOGIN DENGAN HIVE ====================
-//   Future<bool> login(String email, String password) async {
-//     state = state.copyWith(isLoading: true, error: null);
-//
-//     try {
-//       final user = await HiveService.loginUser(email, password); // ✅ RETURNS User
-//
-//       if (user != null) {
-//         state = state.copyWith(
-//           user: user, // ✅ LANGSUNG PAKAI USER
-//           isLoading: false,
-//           error: null,
-//           isAuthenticated: true,
-//         );
-//         return true;
-//       } else {
-//         state = state.copyWith(
-//           isLoading: false,
-//           error: 'Invalid email or password',
-//           isAuthenticated: false,
-//         );
-//         return false;
-//       }
-//     } catch (e) {
-//       state = state.copyWith(
-//         isLoading: false,
-//         error: e.toString(),
-//         isAuthenticated: false,
-//       );
-//       return false;
-//     }
-//   }
-//
-//   // ==================== REGISTER DENGAN HIVE ====================
-//   Future<bool> register(User newUser) async {
-//     state = state.copyWith(isLoading: true, error: null);
-//
-//     try {
-//       final savedUser = await HiveService.registerUser(newUser);
-//
-//       if (savedUser != null) {
-//         state = state.copyWith(
-//           user: savedUser, // ✅ LANGSUNG PAKAI USER
-//           isLoading: false,
-//           error: null,
-//           isAuthenticated: true,
-//         );
-//         return true;
-//       } else {
-//         state = state.copyWith(
-//           isLoading: false,
-//           error: 'Email already registered',
-//           isAuthenticated: false,
-//         );
-//         return false;
-//       }
-//     } catch (e) {
-//       state = state.copyWith(
-//         isLoading: false,
-//         error: e.toString(),
-//         isAuthenticated: false,
-//       );
-//       return false;
-//     }
-//   }
-//
-//   // ==================== LOGOUT ====================
-//   Future<void> logout() async {
-//     await HiveService.logout();
-//     state = AuthState.initial();
-//   }
-//
-//   // ==================== DELETE ACCOUNT ====================
-//   Future<void> deleteAccount() async {
-//     final currentUser = state.user;
-//     if (currentUser != null) {
-//       await HiveService.deleteUser(currentUser.id);
-//       await logout();
-//     }
-//   }
-// }
-//
-// final authProvider = NotifierProvider<AuthController, AuthState>(
-//       () => AuthController(),
-// );
-
-
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth; // Beri alias
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trips/models/user.dart'; // Model User Anda
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:trips/models/user.dart';
 import 'package:trips/providers/auth/auth_state.dart';
 import 'package:trips/services/firestore_service.dart';
+import 'package:uuid/uuid.dart';
 
 class AuthController extends Notifier<AuthState> {
-  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance; // Gunakan alias
+  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
+  final Uuid _uuid = const Uuid();
 
   @override
   AuthState build() {
@@ -137,9 +23,8 @@ class AuthController extends Notifier<AuthState> {
   // ==================== CEK SESSION ====================
   Future<void> _checkSession() async {
     try {
-      final firebase_auth.User? firebaseUser = _auth.currentUser; // Gunakan alias
+      final firebase_auth.User? firebaseUser = _auth.currentUser;
       if (firebaseUser != null) {
-        // Ambil data user dari Firestore berdasarkan uid
         final userData = await _firestoreService.getUser(firebaseUser.uid);
         if (userData != null) {
           state = state.copyWith(
@@ -148,7 +33,6 @@ class AuthController extends Notifier<AuthState> {
             isLoading: false,
           );
         } else {
-          // Jika data tidak ada di Firestore, logout
           await logout();
           state = state.copyWith(isLoading: false);
         }
@@ -163,7 +47,28 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  // ==================== LOGIN DENGAN FIREBASE ====================
+  // ==================== CEK EMAIL DI FIRESTORE ====================
+  Future<bool> _isEmailExistsInFirestore(String email) async {
+    try {
+      print('🔍 FIRESTORE: Checking if email exists: $email');
+
+      // Gunakan method yang sudah ada di FirestoreService
+      final user = await _firestoreService.getUserByEmail(email);
+
+      if (user != null) {
+        print('✅ FIRESTORE: Email FOUND: ${user.email} with ID: ${user.id}');
+        return true;
+      } else {
+        print('❌ FIRESTORE: Email NOT found: $email');
+        return false;
+      }
+    } catch (e) {
+      print('❌ FIRESTORE: Error checking email: $e');
+      return false;
+    }
+  }
+
+  // ==================== LOGIN DENGAN EMAIL/PASSWORD ====================
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -175,7 +80,6 @@ class AuthController extends Notifier<AuthState> {
 
       final firebase_auth.User? firebaseUser = userCredential.user;
       if (firebaseUser != null) {
-        // Ambil data user dari Firestore
         final userData = await _firestoreService.getUser(firebaseUser.uid);
         if (userData != null) {
           state = state.copyWith(
@@ -186,7 +90,6 @@ class AuthController extends Notifier<AuthState> {
           );
           return true;
         } else {
-          // Jika data profil tidak ada, logout
           await _auth.signOut();
           state = state.copyWith(
             isLoading: false,
@@ -195,23 +98,31 @@ class AuthController extends Notifier<AuthState> {
           );
           return false;
         }
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Login failed',
-          isAuthenticated: false,
-        );
-        return false;
       }
+      return false;
     } on firebase_auth.FirebaseAuthException catch (e) {
       String errorMessage;
-      if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Wrong password provided.';
-      } else {
-        errorMessage = e.message ?? 'Login failed';
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found with this email.';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Wrong password. Please try again.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email format.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'This account has been disabled.';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Too many failed login attempts. Try again later.';
+          break;
+        default:
+          errorMessage = e.message ?? 'Login failed';
       }
+
       state = state.copyWith(
         isLoading: false,
         error: errorMessage,
@@ -228,12 +139,177 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  // ==================== REGISTER DENGAN FIREBASE ====================
+  // ==================== GET CURRENT USER ID ====================
+  String? getCurrentUserId() {
+    return _auth.currentUser?.uid;
+  }
+
+  // ==================== GET CURRENT USER ====================
+  User? getCurrentUser() {
+    return state.user;
+  }
+
+  // ==================== GET DISPLAY NAME ====================
+  String getDisplayName() {
+    final user = state.user;
+    if (user != null && user.name.isNotEmpty) {
+      return user.name.split(' ').first;
+    }
+
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser != null) {
+      if (firebaseUser.displayName != null && firebaseUser.displayName!.isNotEmpty) {
+        return firebaseUser.displayName!.split(' ').first;
+      }
+      if (firebaseUser.email != null) {
+        return firebaseUser.email!.split('@').first;
+      }
+    }
+
+    return 'Galileo';
+  }
+
+  // ==================== LOGIN DENGAN GOOGLE ====================
+  Future<bool> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // Sign out dulu untuk memastikan fresh start
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: null,
+          isAuthenticated: false,
+        );
+        return false;
+      }
+
+      // ✅ CEK DI FIRESTORE: Apakah email sudah terdaftar?
+      final emailExists = await _isEmailExistsInFirestore(googleUser.email);
+
+      if (emailExists) {
+        // Email sudah terdaftar di Firestore, tolak login Google
+        await _googleSignIn.signOut();
+        state = state.copyWith(
+          isLoading: false,
+          error: 'This email is already registered. Please login using email and password.',
+          isAuthenticated: false,
+        );
+        return false;
+      }
+
+      // Jika email belum ada di Firestore, lanjutkan login Google
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final credential = firebase_auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      try {
+        final firebase_auth.UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+
+        final firebase_auth.User? firebaseUser = userCredential.user;
+
+        if (firebaseUser != null) {
+          // Buat user baru di Firestore
+          final newUser = User(
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName ?? googleUser.displayName ?? 'User',
+            email: firebaseUser.email ?? googleUser.email,
+            phone: '',
+            gender: '',
+            countryCode: '',
+            password: '',
+            createdAt: DateTime.now(),
+          );
+
+          await _firestoreService.saveUser(newUser);
+
+          state = state.copyWith(
+            user: newUser,
+            isLoading: false,
+            error: null,
+            isAuthenticated: true,
+          );
+          return true;
+        }
+      } on firebase_auth.FirebaseAuthException catch (e) {
+        if (e.code == 'account-exists-with-different-credential') {
+          // Fallback jika cek di Firestore gagal
+          await _googleSignIn.signOut();
+          state = state.copyWith(
+            isLoading: false,
+            error: 'This email is already registered. Please login using email and password.',
+            isAuthenticated: false,
+          );
+          return false;
+        } else {
+          rethrow;
+        }
+      }
+
+      return false;
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'invalid-credential':
+          errorMessage = 'Invalid Google credential.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'This account has been disabled.';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Too many requests. Try again later.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Network error. Please check your internet connection.';
+          break;
+        default:
+          errorMessage = e.message ?? 'Google Sign In failed';
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        error: errorMessage,
+        isAuthenticated: false,
+      );
+      return false;
+    } catch (e) {
+      print('Google Sign In Error: $e');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Google Sign In failed. Please try again.',
+        isAuthenticated: false,
+      );
+      return false;
+    }
+  }
+
+  // ==================== REGISTER ====================
   Future<bool> register(User newUser) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Buat user di Firebase Auth dengan email dan password
+      // ✅ CEK DI FIRESTORE: Apakah email sudah ada?
+      final emailExists = await _isEmailExistsInFirestore(newUser.email);
+
+      if (emailExists) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'This email is already registered. Please login instead.',
+          isAuthenticated: false,
+        );
+        return false;
+      }
+
+      // Coba register
       final firebase_auth.UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: newUser.email,
         password: newUser.password,
@@ -241,7 +317,6 @@ class AuthController extends Notifier<AuthState> {
 
       final firebase_auth.User? firebaseUser = userCredential.user;
       if (firebaseUser != null) {
-        // Simpan data profil ke Firestore dengan uid sebagai document id
         final userWithUid = newUser.copyWith(id: firebaseUser.uid);
         await _firestoreService.saveUser(userWithUid);
 
@@ -252,23 +327,29 @@ class AuthController extends Notifier<AuthState> {
           isAuthenticated: true,
         );
         return true;
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Registration failed',
-          isAuthenticated: false,
-        );
-        return false;
       }
+      return false;
     } on firebase_auth.FirebaseAuthException catch (e) {
       String errorMessage;
+
       if (e.code == 'email-already-in-use') {
-        errorMessage = 'The email address is already registered.';
-      } else if (e.code == 'weak-password') {
-        errorMessage = 'The password is too weak.';
+        errorMessage = 'This email is already registered. Please login instead.';
       } else {
-        errorMessage = e.message ?? 'Registration failed';
+        switch (e.code) {
+          case 'invalid-email':
+            errorMessage = 'Invalid email format.';
+            break;
+          case 'weak-password':
+            errorMessage = 'Password is too weak. Please use at least 6 characters.';
+            break;
+          case 'operation-not-allowed':
+            errorMessage = 'Email/password registration is not enabled.';
+            break;
+          default:
+            errorMessage = e.message ?? 'Registration failed';
+        }
       }
+
       state = state.copyWith(
         isLoading: false,
         error: errorMessage,
@@ -287,7 +368,12 @@ class AuthController extends Notifier<AuthState> {
 
   // ==================== LOGOUT ====================
   Future<void> logout() async {
-    await _auth.signOut();
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+    } catch (e) {
+      print('Error during logout: $e');
+    }
     state = AuthState.initial();
   }
 
@@ -295,9 +381,7 @@ class AuthController extends Notifier<AuthState> {
   Future<void> deleteAccount() async {
     final currentUser = state.user;
     if (currentUser != null) {
-      // Hapus data dari Firestore
       await _firestoreService.deleteUser(currentUser.id);
-      // Hapus user dari Firebase Auth
       await _auth.currentUser?.delete();
       await logout();
     }

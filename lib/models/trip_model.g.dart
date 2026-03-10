@@ -27,13 +27,15 @@ class TripModelAdapter extends TypeAdapter<TripModel> {
       category: fields[7] as String,
       features: (fields[8] as List).cast<String>(),
       isBooked: fields[9] as bool,
+      startDate: fields[10] as DateTime,
+      endDate: fields[11] as DateTime,
     );
   }
 
   @override
   void write(BinaryWriter writer, TripModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +55,11 @@ class TripModelAdapter extends TypeAdapter<TripModel> {
       ..writeByte(8)
       ..write(obj.features)
       ..writeByte(9)
-      ..write(obj.isBooked);
+      ..write(obj.isBooked)
+      ..writeByte(10)
+      ..write(obj.startDate)
+      ..writeByte(11)
+      ..write(obj.endDate);
   }
 
   @override

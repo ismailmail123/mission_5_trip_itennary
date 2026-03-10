@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "781197956903-nrhgge1h14lvsmhbudtcf4u1id6gsaf5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example_trips.trips",
+            "certificate_hash": "eb0064ed9f734f75e645cca0c2b28ff07f9265bd"
+          }
+        },
+        {
           "client_id": "781197956903-12av621kfqiftqdim65jn1100h8vvc2l.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "781197956903-12av621kfqiftqdim65jn1100h8vvc2l.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "781197956903-o9nk6ucpl8vm8spk788vvpsu08fksim6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.exampletrips.trips"
+              }
             }
           ]
         }

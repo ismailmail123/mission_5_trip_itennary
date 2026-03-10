@@ -1,24 +1,49 @@
 import 'package:hive/hive.dart';
 import 'package:trips/models/trip_model.dart';
-import 'package:trips/helpers/trip_constans.dart';
 
 class HiveTripService {
-  static const String tripBoxName = 'trips';
+  static const String _boxName = 'trips';
+  static Box<TripModel>? _box;
 
-  // ==================== INISIALISASI ====================
   static Future<void> init() async {
-    if (!Hive.isAdapterRegistered(1)) {
-      Hive.registerAdapter(TripModelAdapter());
+    try {
+      // Pastikan adapter sudah terdaftar
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(TripModelAdapter());
+      }
+
+      // Cek apakah box sudah ada dan buka
+      if (Hive.isBoxOpen(_boxName)) {
+        _box = Hive.box<TripModel>(_boxName);
+      } else {
+        // Buka box baru
+        _box = await Hive.openBox<TripModel>(_boxName);
+      }
+
+      print('✅ Hive trips box opened. Length: ${_box?.length}');
+
+      // Cek apakah data ada, jika tidak ada, inisialisasi
+      if (_box?.isEmpty ?? true) {
+        await _initializeDefaultTrips();
+      }
+    } catch (e) {
+      print('❌ Error opening Hive box: $e');
+
+      // Jika error, hapus dan buat baru
+      try {
+        await Hive.deleteBoxFromDisk(_boxName);
+        _box = await Hive.openBox<TripModel>(_boxName);
+        await _initializeDefaultTrips();
+        print('✅ Hive box recreated successfully');
+      } catch (e2) {
+        print('❌ Fatal error: $e2');
+      }
     }
-    await Hive.openBox<TripModel>(tripBoxName);
   }
 
-  // ==================== RESET DAN INITIAL DATA ====================
-  static Future<void> resetAndInitialize() async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    await box.clear(); // Hapus semua data trip lama
+  static Future<void> _initializeDefaultTrips() async {
+    final now = DateTime.now();
 
-    // Data dummy dari TripService
     final defaultTrips = [
       TripModel(
         id: '1',
@@ -31,6 +56,8 @@ class HiveTripService {
         category: 'Cultural',
         features: ['Historic Site', 'Garden', 'Temple'],
         isBooked: false,
+        startDate: DateTime(now.year, now.month, now.day + 30),
+        endDate: DateTime(now.year, now.month, now.day + 37),
       ),
       TripModel(
         id: '2',
@@ -42,7 +69,9 @@ class HiveTripService {
         rating: 4.9,
         category: 'Adventure',
         features: ['Beach', 'Culture', 'Nature'],
-        isBooked: true,
+        isBooked: false,
+        startDate: DateTime(now.year, now.month, now.day + 15),
+        endDate: DateTime(now.year, now.month, now.day + 20),
       ),
       TripModel(
         id: '3',
@@ -55,62 +84,82 @@ class HiveTripService {
         category: 'City',
         features: ['City Tour', 'Food', 'Shopping'],
         isBooked: false,
+        startDate: DateTime(now.year, now.month, now.day + 45),
+        endDate: DateTime(now.year, now.month, now.day + 49),
+      ),
+      TripModel(
+        id: '4',
+        title: 'Bangkok Street Food',
+        location: 'Bangkok, Thailand',
+        image: 'https://images.unsplash.com/photo-1559314809-0d155014e29e',
+        description: 'Experience the best street food in Bangkok with guided tours',
+        price: 450.0,
+        rating: 4.6,
+        category: 'Food',
+        features: ['Food Tour', 'Culture', 'Night Market'],
+        isBooked: false,
+        startDate: DateTime(now.year, now.month, now.day - 5),
+        endDate: DateTime(now.year, now.month, now.day + 2),
       ),
     ];
 
     for (final trip in defaultTrips) {
-      await box.put(trip.id, trip);
+      await _box?.put(trip.id, trip);
+    }
+
+    print('✅ Initialized ${defaultTrips.length} default trips with dates');
+  }
+
+  static Future<void> resetAndInitialize() async {
+    try {
+      await _box?.clear();
+      await _initializeDefaultTrips();
+      print('✅ Trips reset and initialized');
+    } catch (e) {
+      print('❌ Error resetting trips: $e');
     }
   }
 
-  // ==================== CRUD OPERATIONS ====================
   static Future<List<TripModel>> getAllTrips() async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    return box.values.toList();
+    if (_box == null) await init();
+    return _box?.values.toList() ?? [];
   }
 
   static Future<TripModel?> getTripById(String id) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    return box.get(id);
+    if (_box == null) await init();
+    return _box?.get(id);
   }
 
   static Future<void> addTrip(TripModel trip) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    await box.put(trip.id, trip);
+    if (_box == null) await init();
+    await _box?.put(trip.id, trip);
   }
 
   static Future<void> updateTrip(String id, TripModel updatedTrip) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    if (box.containsKey(id)) {
-      await box.put(id, updatedTrip);
-    }
+    if (_box == null) await init();
+    await _box?.put(id, updatedTrip);
   }
 
   static Future<void> deleteTrip(String id) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    await box.delete(id);
+    if (_box == null) await init();
+    await _box?.delete(id);
   }
 
   static Future<void> bookTrip(String id) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    final trip = box.get(id);
+    if (_box == null) await init();
+    final trip = _box?.get(id);
     if (trip != null) {
-      final updated = trip.copyWith(isBooked: true);
-      await box.put(id, updated);
+      final updatedTrip = trip.copyWith(isBooked: true);
+      await _box?.put(id, updatedTrip);
     }
   }
 
   static Future<void> cancelBooking(String id) async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    final trip = box.get(id);
+    if (_box == null) await init();
+    final trip = _box?.get(id);
     if (trip != null) {
-      final updated = trip.copyWith(isBooked: false);
-      await box.put(id, updated);
+      final updatedTrip = trip.copyWith(isBooked: false);
+      await _box?.put(id, updatedTrip);
     }
-  }
-
-  static Future<List<TripModel>> getBookedTrips() async {
-    final box = Hive.box<TripModel>(tripBoxName);
-    return box.values.where((trip) => trip.isBooked).toList();
   }
 }

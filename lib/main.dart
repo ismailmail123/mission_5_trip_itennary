@@ -1,10 +1,16 @@
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:trips/providers/auth/auth_state.dart';
 import 'package:trips/screens/main_screen.dart';
 import 'package:trips/screens/splash_screen.dart';
 import 'package:trips/screens/login_screen.dart';
 import 'package:trips/screens/register_screen.dart';
+import 'package:trips/services/firestore_trip_service.dart';
 import 'package:trips/services/hive_service.dart';
 import 'package:trips/services/trip_service.dart';
 import 'package:trips/style/app_colors.dart';
@@ -12,6 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
 import 'package:trips/providers/theme/theme_controller.dart';
+import 'package:trips/providers/auth/auth_controller.dart';
+
+import 'models/trip_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,38 +28,97 @@ void main() async {
   // Inisialisasi Firebase
   await Firebase.initializeApp();
 
+  try {
+    final appDocDir = await getApplicationDocumentsDirectory();
+
+    // Hapus folder hive
+    final hiveDir = Directory('${appDocDir.path}/hive');
+    if (await hiveDir.exists()) {
+      await hiveDir.delete(recursive: true);
+      print('✅ Hive directory deleted: ${hiveDir.path}');
+    }
+
+    // Hapus file .hive di root
+    final files = await appDocDir.list().toList();
+    for (var file in files) {
+      if (file.path.endsWith('.hive') || file.path.endsWith('.lock')) {
+        await file.delete();
+        print('✅ Deleted: ${file.path}');
+      }
+    }
+
+    // Hapus di cache directory
+    final cacheDir = await getTemporaryDirectory();
+    final hiveCacheDir = Directory('${cacheDir.path}/hive');
+    if (await hiveCacheDir.exists()) {
+      await hiveCacheDir.delete(recursive: true);
+    }
+  } catch (e) {
+    print('Error deleting Hive files: $e');
+  }
+
+  // Inisialisasi Firebase
+  await Firebase.initializeApp();
+
+  // ✅ INISIALISASI HIVE
+  await Hive.initFlutter();
+
+  // Register adapter SEBELUM buka box
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(TripModelAdapter());
+    print('✅ TripModelAdapter registered');
+  }
+
+  // ✅ BUAT ULANG SERVICE DENGAN DATA BARU
+  await HiveService.init();
+  await HiveTripService.init();
+
+  // ✅ RESET DAN INITIAL DATA TRIP
+  await HiveTripService.resetAndInitialize();
+
+  // ✅ INISIALISASI FIRESTORE TRIP SERVICE
+  final firestoreTripService = FirestoreTripService();
+  await firestoreTripService.initializeDefaultTrips();
+
+  runApp(const ProviderScope(child: MyApp()));
+
+
   // ✅ INISIALISASI HIVE
   await Hive.initFlutter();
   await HiveService.init();
   await HiveTripService.init();
 
-  // ✅ RESET DAN INITIAL DATA TRIP (hapus dulu, create ulang)
+  // ✅ RESET DAN INITIAL DATA TRIP
   await HiveTripService.resetAndInitialize();
+
+    await firestoreTripService.initializeDefaultTrips();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
+  // Buat GlobalKey untuk navigator
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProvider);
     final themeController = ref.read(themeProvider.notifier);
 
-    // Tampilkan loading screen
-    if (themeState.isLoading) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: AppColors.light.background,
-          body: Center(
-            child: CircularProgressIndicator(
-              color: AppColors.light.primary,
-            ),
-          ),
-        ),
-      );
-    }
+    // Pantau perubahan auth state
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (!next.isLoading) {
+        if (next.isAuthenticated) {
+          // Jika login, navigasi ke MainScreen
+          navigatorKey.currentState?.pushReplacementNamed(MainScreen.routeName);
+        } else {
+          // Jika logout, navigasi ke Login Screen
+          navigatorKey.currentState?.pushReplacementNamed(LoginScreen.routeName);
+        }
+      }
+    });
 
     return Sizer(
       builder: (context, orientation, deviceType) {
@@ -60,30 +128,14 @@ class MyApp extends ConsumerWidget {
           themeMode: themeState.themeMode,
           theme: _buildLightTheme(),
           darkTheme: _buildDarkTheme(),
-          home: SplashScreen(
-            onThemeToggle: themeController.toggleTheme,
-            themeIcon: themeState.getThemeIcon(),
-            themeDescription: themeState.getThemeDescription(),
-            isDarkMode: themeState.isDarkMode(),
-          ),
+          navigatorKey: navigatorKey,
+          initialRoute: SplashScreen.routeName,
           routes: {
             SplashScreen.routeName: (context) => SplashScreen(
-              onThemeToggle: themeController.toggleTheme,
-              themeIcon: themeState.getThemeIcon(),
-              themeDescription: themeState.getThemeDescription(),
-              isDarkMode: themeState.isDarkMode(),
             ),
             LoginScreen.routeName: (context) => LoginScreen(
-              onThemeToggle: themeController.toggleTheme,
-              themeIcon: themeState.getThemeIcon(),
-              themeDescription: themeState.getThemeDescription(),
-              isDarkMode: themeState.isDarkMode(),
             ),
             RegisterScreen.routeName: (context) => RegisterScreen(
-              onThemeToggle: themeController.toggleTheme,
-              themeIcon: themeState.getThemeIcon(),
-              themeDescription: themeState.getThemeDescription(),
-              isDarkMode: themeState.isDarkMode(),
             ),
             MainScreen.routeName: (context) => MainScreen(
               onThemeToggle: themeController.toggleTheme,

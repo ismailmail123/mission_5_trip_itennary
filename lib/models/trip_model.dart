@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 
 part 'trip_model.g.dart';
@@ -34,6 +35,12 @@ class TripModel {
   @HiveField(9)
   final bool isBooked;
 
+  @HiveField(10)
+  final DateTime startDate;
+
+  @HiveField(11)
+  final DateTime endDate;
+
   TripModel({
     required this.id,
     required this.title,
@@ -45,6 +52,8 @@ class TripModel {
     required this.category,
     this.features = const [],
     this.isBooked = false,
+    required this.startDate,
+    required this.endDate,
   });
 
   TripModel copyWith({
@@ -58,6 +67,8 @@ class TripModel {
     String? category,
     List<String>? features,
     bool? isBooked,
+    DateTime? startDate,
+    DateTime? endDate,
   }) {
     return TripModel(
       id: id ?? this.id,
@@ -70,6 +81,8 @@ class TripModel {
       category: category ?? this.category,
       features: features ?? this.features,
       isBooked: isBooked ?? this.isBooked,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
     );
   }
 
@@ -85,6 +98,8 @@ class TripModel {
       'category': category,
       'features': features,
       'isBooked': isBooked,
+      'startDate': Timestamp.fromDate(startDate),
+      'endDate': Timestamp.fromDate(endDate),
     };
   }
 
@@ -100,6 +115,16 @@ class TripModel {
       category: map['category'] ?? '',
       features: List<String>.from(map['features'] ?? []),
       isBooked: map['isBooked'] ?? false,
+      startDate: _parseDate(map['startDate']),
+      endDate: _parseDate(map['endDate']),
     );
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.parse(value);
+    if (value is DateTime) return value;
+    return DateTime.now();
   }
 }

@@ -4,26 +4,14 @@ import 'package:trips/screens/login_screen.dart';
 import 'package:trips/style/app_colors.dart';
 import 'package:trips/style/font_style.dart';
 import 'package:trips/models/country_code.dart';
-import 'package:trips/models/register_request.dart';
 import 'package:trips/models/user.dart';
-import 'package:trips/helpers/login_validator.dart';
 import 'package:trips/providers/register/register_controller.dart';
 import 'package:trips/providers/auth/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   static const routeName = 'register';
-  final VoidCallback onThemeToggle;
-  final bool isDarkMode;
-  final IconData themeIcon;
-  final String themeDescription;
 
-  const RegisterScreen({
-    super.key,
-    required this.onThemeToggle,
-    required this.isDarkMode,
-    required this.themeIcon,
-    required this.themeDescription,
-  });
+  const RegisterScreen({super.key});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -60,9 +48,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _emailController.addListener(() => controller.setEmail(_emailController.text));
     _phoneController.addListener(() => controller.setPhone(_phoneController.text));
     _passwordController.addListener(() => controller.setPassword(_passwordController.text));
-    _confirmPasswordController.addListener(
-          () => controller.setConfirmPassword(_confirmPasswordController.text),
-    );
+    _confirmPasswordController.addListener(() => controller.setConfirmPassword(_confirmPasswordController.text));
   }
 
   @override
@@ -79,34 +65,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginScreen(
-          onThemeToggle: widget.onThemeToggle,
-          isDarkMode: widget.isDarkMode,
-          themeIcon: widget.themeIcon,
-          themeDescription: widget.themeDescription,
-          skipLoading: true,
-        ),
+        builder: (context) => const LoginScreen(skipLoading: true), // tanpa parameter tema
       ),
     );
   }
 
   void _navigateToLoginWithSnackbar(String email, String password) {
     _showSuccessSnackBar('Registration successful! Your account has been created.');
-
-    // ✅ LANGSUNG NAVIGASI KE LOGIN DENGAN PREFILLED DATA
     if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => LoginScreen(
-            onThemeToggle: widget.onThemeToggle,
-            isDarkMode: widget.isDarkMode,
-            themeIcon: widget.themeIcon,
-            themeDescription: widget.themeDescription,
-            prefilledEmail: email,
-            prefilledPassword: password,
-            skipLoading: true,
-          ),
+          builder: (context) => LoginScreen(prefilledEmail: email, prefilledPassword: password, skipLoading: true),
         ),
       );
     }
@@ -117,15 +87,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final authController = ref.read(authProvider.notifier);
     final registerState = ref.read(registerProvider);
 
-    // Validasi form
     final isValid = registerController.validate();
-
     if (!isValid) {
       _showErrorSnackBar("Please fix the errors in the form");
       return;
     }
 
-    // Buat UserModel untuk disimpan di Hive
     final userModel = User.fromRegistration(
       name: registerState.name,
       email: registerState.email,
@@ -136,24 +103,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
 
     registerController.setLoading(true);
-
-    // ✅ REGISTER KE HIVE VIA AUTH CONTROLLER
     final success = await authController.register(userModel);
-
     registerController.setLoading(false);
 
     if (success) {
-      // ✅ REGISTER SUKSES - LANGSUNG KE LOGIN
-      _navigateToLoginWithSnackbar(
-        registerState.email,
-        registerState.password,
-      );
+      if (mounted) {
+        _navigateToLoginWithSnackbar(registerState.email, registerState.password);
+      }
     } else {
-      // ✅ REGISTER GAGAL - EMAIL SUDAH TERDAFTAR
-      _showErrorSnackBar(
-        ref.read(authProvider).error ?? "Email already registered",
-      );
+      final error = ref.read(authProvider).error;
+      if (error != null && error.contains('already registered')) {
+        if (mounted) {
+          _showErrorWithLoginOption(error);
+        }
+      } else {
+        if (mounted) {
+          _showErrorSnackBar(error ?? "Registration failed");
+        }
+      }
     }
+  }
+  void _showErrorWithLoginOption(String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Email Already Registered'),
+        content: Text('$message\n\nWould you like to login instead?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToLogin();
+            },
+            child: const Text('Login', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showErrorSnackBar(String message) {
@@ -163,9 +151,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         content: Text(message),
         backgroundColor: AppColors.of(context).error,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -175,15 +161,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: AppColors.of(context).onPrimary),
-        ),
+        content: Text(message, style: TextStyle(color: AppColors.of(context).onPrimary)),
         backgroundColor: AppColors.of(context).success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -197,9 +178,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       isScrollControlled: true,
       builder: (context) {
         return StatefulBuilder(
@@ -227,18 +206,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Select Country',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: colors.textSecondary),
-                        onPressed: () => Navigator.pop(context),
-                      ),
+                      Text('Select Country', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                      IconButton(icon: Icon(Icons.close, color: colors.textSecondary), onPressed: () => Navigator.pop(context)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -249,10 +218,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       hintText: 'Search country...',
                       hintStyle: TextStyle(color: colors.textSecondary),
                       prefixIcon: Icon(Icons.search, color: colors.textSecondary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colors.border),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colors.border)),
                       filled: true,
                       fillColor: colors.inputBackground,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -267,24 +233,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         final country = filteredList[index];
                         return ListTile(
                           leading: Text(country.flag, style: const TextStyle(fontSize: 24)),
-                          title: Text(
-                            country.name,
-                            style: TextStyle(
-                              color: colors.textPrimary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Text(
-                            country.code,
-                            style: TextStyle(color: colors.textSecondary),
-                          ),
-                          trailing: Text(
-                            country.dialCode,
-                            style: TextStyle(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          title: Text(country.name, style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.w500)),
+                          subtitle: Text(country.code, style: TextStyle(color: colors.textSecondary)),
+                          trailing: Text(country.dialCode, style: TextStyle(color: colors.primary, fontWeight: FontWeight.w600)),
                           onTap: () {
                             controller.setSelectedCountry(country);
                             Navigator.pop(context);
@@ -306,74 +257,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final registerState = ref.watch(registerProvider);
-    final bool isDark = widget.isDarkMode;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              widget.themeIcon,
-              color: colors.textPrimary,
-            ),
-            tooltip: widget.themeDescription,
-            onPressed: widget.onThemeToggle,
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: 0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 0),
           child: Column(
             children: [
-              // Logo Section
               Container(
                 width: 320,
                 height: 220,
                 margin: const EdgeInsets.only(top: 0, bottom: 0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                ),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Wander",
-                          style: AppTextStyles.h1(context).copyWith(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            color: const Color.fromARGB(255, 51, 165, 218),
-                          ),
-                        ),
-                        Text(
-                          "Ly",
-                          style: AppTextStyles.h1(context).copyWith(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            color: const Color.fromARGB(255, 164, 215, 239),
-                          ),
-                        ),
+                        Text("Wander", style: AppTextStyles.h1(context).copyWith(fontSize: 42, fontWeight: FontWeight.w800, color: const Color.fromARGB(255, 51, 165, 218))),
+                        Text("Ly", style: AppTextStyles.h1(context).copyWith(fontSize: 42, fontWeight: FontWeight.w800, color: const Color.fromARGB(255, 164, 215, 239))),
                       ],
                     ),
                     Positioned(
                       top: -75,
                       child: Opacity(
                         opacity: 0.75,
-                        child: Image.asset(
-                          'assets/images/098c50d2b4f3e494b000428f0cb7997743e3f04b.png',
-                          width: 320,
-                          height: 320,
-                          fit: BoxFit.contain,
-                        ),
+                        child: Image.asset('assets/images/098c50d2b4f3e494b000428f0cb7997743e3f04b.png', width: 320, height: 320, fit: BoxFit.contain),
                       ),
                     ),
                   ],
@@ -386,48 +302,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: BoxDecoration(
                   color: colors.bg_black,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: colors.border,
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: colors.border, width: 1.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: Text(
-                        'Account Register',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: Text('Account Register', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 24),
 
                     _label('Full Name', colors),
-                    _input(
-                      colors,
-                      controller: _nameController,
-                      hintText: "Enter your full name",
-                      errorText: registerState.nameError,
-                    ),
+                    _input(colors, controller: _nameController, hintText: "Enter your full name", errorText: registerState.nameError),
 
                     _label('Email', colors),
-                    _input(
-                      colors,
-                      controller: _emailController,
-                      hintText: "Enter your email",
-                      keyboardType: TextInputType.emailAddress,
-                      errorText: registerState.emailError,
-                    ),
+                    _input(colors, controller: _emailController, hintText: "Enter your email", keyboardType: TextInputType.emailAddress, errorText: registerState.emailError),
 
                     _label('Jenis Kelamin', colors),
                     _dropdown(colors, registerState.gender, (value) {
-                      if (value != null) {
-                        ref.read(registerProvider.notifier).setGender(value);
-                      }
+                      if (value != null) ref.read(registerProvider.notifier).setGender(value);
                     }),
 
                     _label('Mobile', colors),
@@ -447,8 +340,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       colors: colors,
                       obscure: registerState.obscureConfirmPassword,
                       controller: _confirmPasswordController,
-                      toggle: () =>
-                          ref.read(registerProvider.notifier).toggleObscureConfirmPassword(),
+                      toggle: () => ref.read(registerProvider.notifier).toggleObscureConfirmPassword(),
                       errorText: registerState.confirmPasswordError,
                     ),
 
@@ -456,18 +348,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: colors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
+                      child: Text('Forgot Password?', style: TextStyle(color: colors.textSecondary, fontSize: 12)),
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Register Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -476,33 +361,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           backgroundColor: colors.primary,
                           foregroundColor: colors.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           disabledBackgroundColor: colors.primary.withOpacity(0.5),
                         ),
                         child: registerState.isLoading
-                            ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(colors.onPrimary),
-                          ),
-                        )
-                            : Text(
-                          'Register',
-                          style: TextStyle(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                            ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(colors.onPrimary)))
+                            : Text('Register', style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600)),
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    // Login Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -511,70 +380,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           backgroundColor: colors.login_btn,
                           foregroundColor: colors.textPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          side: BorderSide(
-                            color: colors.border,
-                            width: 1.5,
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          side: BorderSide(color: colors.border, width: 1.5),
                           disabledBackgroundColor: colors.login_btn.withOpacity(0.5),
                         ),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: Text('Login', style: TextStyle(fontWeight: FontWeight.w600)),
                       ),
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Divider
                     Row(
                       children: [
                         Expanded(child: Divider(color: colors.divider)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            'Or',
-                            style: TextStyle(color: colors.textSecondary),
-                          ),
-                        ),
+                        Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text('Or', style: TextStyle(color: colors.textSecondary))),
                         Expanded(child: Divider(color: colors.divider)),
                       ],
                     ),
 
                     const SizedBox(height: 16),
 
-                    // Google Sign In
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: registerState.isLoading ? null : () {},
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: Color(Colors.white.value).withOpacity(isDark ? 0.7 : 1.0),
-                          ),
+                          side: BorderSide(color: Color(Colors.white.value).withOpacity(isDark ? 0.7 : 1.0)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           backgroundColor: Colors.transparent,
                           foregroundColor: colors.textPrimary,
                         ),
-                        icon: Image.asset(
-                          'assets/images/google_logo1.png',
-                          height: 18,
-                        ),
-                        label: Text(
-                          'Sign in with Google',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        icon: Image.asset('assets/images/google_logo1.png', height: 18),
+                        label: Text('Sign in with Google', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
@@ -594,29 +432,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       child: RichText(
         text: TextSpan(
           text: text,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          children: const [
-            TextSpan(
-              text: ' *',
-              style: TextStyle(color: Colors.red),
-            ),
-          ],
+          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+          children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
         ),
       ),
     );
   }
 
-  Widget _input(
-      AppColors colors, {
-        required TextEditingController controller,
-        String hintText = "",
-        TextInputType keyboardType = TextInputType.text,
-        String? errorText,
-      }) {
+  Widget _input(AppColors colors,
+      {required TextEditingController controller, String hintText = "", TextInputType keyboardType = TextInputType.text, String? errorText}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -632,36 +456,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             fillColor: colors.inputBackground,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.border,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.border,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.primary,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.primary, width: 1.5),
             ),
             errorText: errorText,
-            errorStyle: TextStyle(
-              color: colors.error,
-              fontSize: 12,
-            ),
+            errorStyle: TextStyle(color: colors.error, fontSize: 12),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: colors.error,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: colors.error, width: 1.5),
             ),
           ),
         ),
@@ -674,32 +483,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-          border: Border.all(
-            color: colors.border,
-            width: 1.5,
-          ),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white, border: Border.all(color: colors.border, width: 1.5)),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: value,
             isExpanded: true,
-            style: TextStyle(
-              color: colors.inputText,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: colors.inputText, fontSize: 16),
             dropdownColor: Colors.white,
             items: const [
-              DropdownMenuItem(
-                value: "Female",
-                child: Text("Female"),
-              ),
-              DropdownMenuItem(
-                value: "Male",
-                child: Text("Male"),
-              ),
+              DropdownMenuItem(value: "Female", child: Text("Female")),
+              DropdownMenuItem(value: "Male", child: Text("Male")),
             ],
             onChanged: ref.watch(registerProvider).isLoading ? null : onChanged,
           ),
@@ -723,29 +516,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: BoxDecoration(
                   color: colors.inputBackground,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: errorText != null ? colors.error : colors.border,
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: errorText != null ? colors.error : colors.border, width: 1.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(registerState.selectedCountry.flag),
                     const SizedBox(width: 8),
-                    Text(
-                      registerState.selectedCountry.dialCode,
-                      style: TextStyle(
-                        color: colors.inputText,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      color: colors.textSecondary,
-                      size: 20,
-                    ),
+                    Text(registerState.selectedCountry.dialCode, style: TextStyle(color: colors.inputText, fontWeight: FontWeight.w500, fontSize: 14)),
+                    Icon(Icons.arrow_drop_down, color: colors.textSecondary, size: 20),
                   ],
                 ),
               ),
@@ -765,36 +544,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   fillColor: colors.inputBackground,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: errorText != null ? colors.error : colors.border,
-                      width: 1.5,
-                    ),
+                    borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: errorText != null ? colors.error : colors.border,
-                      width: 1.5,
-                    ),
+                    borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: errorText != null ? colors.error : colors.primary,
-                      width: 1.5,
-                    ),
+                    borderSide: BorderSide(color: errorText != null ? colors.error : colors.primary, width: 1.5),
                   ),
                   errorText: errorText,
-                  errorStyle: TextStyle(
-                    color: colors.error,
-                    fontSize: 12,
-                  ),
+                  errorStyle: TextStyle(color: colors.error, fontSize: 12),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: colors.error,
-                      width: 1.5,
-                    ),
+                    borderSide: BorderSide(color: colors.error, width: 1.5),
                   ),
                 ),
               ),
@@ -827,44 +591,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             filled: true,
             fillColor: colors.inputBackground,
             suffixIcon: IconButton(
-              icon: Icon(
-                obscure ? Icons.visibility_off : Icons.visibility,
-                color: colors.textSecondary,
-              ),
+              icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: colors.textSecondary),
               onPressed: ref.watch(registerProvider).isLoading ? null : toggle,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.border,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.border,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.border, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: errorText != null ? colors.error : colors.primary,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: errorText != null ? colors.error : colors.primary, width: 1.5),
             ),
             errorText: errorText,
-            errorStyle: TextStyle(
-              color: colors.error,
-              fontSize: 12,
-            ),
+            errorStyle: TextStyle(color: colors.error, fontSize: 12),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: colors.error,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: colors.error, width: 1.5),
             ),
           ),
         ),
