@@ -67,6 +67,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '781197956903',
     projectId: 'flutter-trips-a1c9e',
     storageBucket: 'flutter-trips-a1c9e.firebasestorage.app',
+    androidClientId: '781197956903-nrhgge1h14lvsmhbudtcf4u1id6gsaf5.apps.googleusercontent.com',
     iosClientId: '781197956903-o9nk6ucpl8vm8spk788vvpsu08fksim6.apps.googleusercontent.com',
     iosBundleId: 'com.exampletrips.trips',
   );
@@ -80,4 +81,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'flutter-trips-a1c9e.firebasestorage.app',
     measurementId: 'G-RM9ZS09HXX',
   );
+
 }

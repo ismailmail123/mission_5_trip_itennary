@@ -1,0 +1,31 @@
+import 'package:trips/data/models/user.dart';
+
+class AuthState {
+  final User? user;
+  final bool isLoading;
+  final String? error;
+  final bool isAuthenticated;
+
+  AuthState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+    this.isAuthenticated = false,
+  });
+
+  AuthState copyWith({
+    User? user,
+    bool? isLoading,
+    String? error,
+    bool? isAuthenticated,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+    );
+  }
+
+  static AuthState initial() => AuthState();
+}
